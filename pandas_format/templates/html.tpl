@@ -1,22 +1,3 @@
-{% macro display_index(indices, outerloop) %} 
-    {% set dindex = df.index.tolist() %}
-    {% if multi is none %}
-        {{ row_header(indices, 0) }}
-    {% else %}
-        {% if not sparsify %}
-            {% for i in indices %}
-                {{ row_header(i, 0) }}
-            {% endfor %}
-        {% else %}
-            {% for i in indices %}
-                {% if outerloop.first or dindex[outerloop.index0 - 1][loop.index0] != i %}
-                    {{ row_header(i, multi[loop.index0][i]) }}
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-    {% endif %}
-{% endmacro %}
-
 {% macro row_header(header, rowspan) %}
     {% if col_space is not none %}
         {% set style = "min-width: " ~ col_space ~ ";" %}
@@ -43,11 +24,28 @@
     {% endif %}
 {% endmacro %}
 
+
 {% macro display_rows(rows, start) %}
+    {% set dindex = rows.index.tolist() %}
     {% for tuple in rows.itertuples() %}
+      {% set outerloop = loop %}
       <tr>
         {% if index %}
-            {{ display_index(tuple[0], loop) | trim }}
+           {% if levels == 1 %}
+               {{ row_header(tuple[0], 0) }}
+           {% else %}
+               {% if not sparsify %}
+                   {% for i in tuple[0] %}
+                       {{ row_header(i, 0) }}
+                   {% endfor %}
+               {% else %}
+                   {% for i in tuple[0] %}
+                       {% if outerloop.first or dindex[outerloop.index0 - 1][loop.index0] != i %}
+                           {{ row_header(i, get_rowspan(rows, i, loop.index0)) }}
+                       {% endif %}
+                   {% endfor %}
+               {% endif %}
+           {% endif %}
         {% endif %}
         {% set row_num = start + loop.index %}
         {% if not split_cols %}
@@ -113,6 +111,23 @@
         {% set head_rows = (max_rows / 2) | round(0, "ceil") | int %}
         {% set tail_rows = (max_rows / 2) | round(0, "ceil") | int %}
         {{ display_rows(df.head(head_rows), 0) }}
+        <tr> 
+            {% if index %}
+                {% for i in range(levels) %}
+                    <th> &hellip; </th>
+                {% endfor %}
+            {% endif %}
+
+            {% if split_cols %}
+                {% for i in range(max_cols + 1) %}
+                    <td> &hellip; </td>
+                {% endfor %}
+            {% else %}
+                {% for i in range(df.columns | length) %}
+                    <td> &hellip; </td>
+                {% endfor %}
+            {% endif %}
+        </tr>
         {{ display_rows(df.tail(tail_rows), 0) }}
     {% endif %}
   </tbody>

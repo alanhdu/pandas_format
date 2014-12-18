@@ -35,24 +35,31 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
         else:
             return str(value)
 
+    def get_rowspan(mi, key, level):
+        count = 0
+        for ts in mi.index.tolist():
+            if ts[level] == key:
+                count += 1
+        return count
+
     indices = df.index.tolist()
 
     env = Environment(loader=PackageLoader("pandas_format"),
                       trim_blocks=True, lstrip_blocks=True)
     env.filters["format_value"] = format_value
-    env.globals.update(any=any)
+    env.globals.update(any=any, get_rowspan=get_rowspan)
     jinja2.filters.FILTERS["format_value"] = format_value
     template = env.get_template("html.tpl")
 
-    try:
-        multi = [Counter(level) for level in zip(*df.index.tolist())]
-    except TypeError:
-        multi = None
+    if isinstance(df.index, pd.MultiIndex):
+        levels = len(df.index.levels)
+    else:
+        levels = 1
 
-    return template.render(df=df, multi=multi, bold_rows=bold_rows,
+    return template.render(df=df, levels=levels, bold_rows=bold_rows,
                 header=header, col_space=col_space, index=index, 
                 sparsify=sparsify, index_names=index_names,
                 justify=justify, max_rows=max_rows, max_cols=max_cols)
 
 df.index.rename(["module", "name"], inplace=True)
-print(to_html(df, max_cols=5))
+print(to_html(df, max_rows=20))

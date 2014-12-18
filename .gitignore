@@ -1,0 +1,11 @@
+*.so
+*.o
+*.pyc
+*/__pycache__
+*.swp
+*.swo
+*.pyd
+build
+
+
+__conda_version__.txt
