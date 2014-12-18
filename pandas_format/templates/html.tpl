@@ -10,15 +10,15 @@
         {% set row = "" %}
     {% endif %}
     {% if bold_rows %}
-        <th {{ style }} {{ row }}>{{ header }}</th>
+        <th {{ style }} {{ row }}>{{ header | format_value }}</th>
     {% else %}
-        <td {{ style }} {{ row }}>{{ header }}</th>
+        <td {{ style }} {{ row }}>{{ header | format_value }}</th>
     {% endif %}
 {% endmacro %}
 
 {% macro column_header(header) %}
     {% if col_space is not none %}
-        <th style='min-width: {{col_space }};'>{{ header }}</th>
+        <th style='min-width: {{col_space }};'>{{ header | format_value}}</th>
     {% else %}
         <th>{{ header }}</th>
     {% endif %}
@@ -47,21 +47,17 @@
                {% endif %}
            {% endif %}
         {% endif %}
-        {% set row_num = start + loop.index %}
         {% if not split_cols %}
             {% for value in tuple[1:] %}
-                {% set col_num = (tuple | length) - loop.revindex - 1 %}
-                <td>{{ value | format_value(row_num, col_num) }}</td>
+                <td>{{ value | format_value }}</td>
             {% endfor %}
         {% else %}
             {% for value in tuple[1:head_col + 1] %}
-                {% set col_num = loop.index %}
-                <td>{{ value | format_value(row_num, col_num) }}</td>
+                <td>{{ value | format_value }}</td>
             {% endfor %}
             <td> &hellip; </td>
             {% for value in tuple[-tail_col:] %}
-                {% set col_num = loop.index %}
-                <td>{{ value | format_value(row_num, col_num) }}</td>
+                <td>{{ value | format_value }}</td>
             {% endfor %}
         {% endif %}
       </tr>
@@ -79,7 +75,7 @@
             {% if index %}
                 {% for name in df.index.names %}
                     {% if index_names and any(df.index.names) %}
-                        <th> {{ name }} </th>
+                        <th> {{ name | format_value }} </th>
                     {% else %}
                         <th> </th>
                     {% endif %}
@@ -88,17 +84,17 @@
             {% set split_cols = max_cols < df.columns | length %}
             {% if not split_cols %}
                 {% for column in df.columns %}
-                    {{ column_header(column) | trim}}
+                    {{ column_header(column)}}
                 {% endfor %}
             {% else %}
                 {% set head_col = (max_cols / 2) | round(0, "ceil") | int %}
                 {% set tail_col = (max_cols / 2) | round(0, "floor") | int %}
                 {% for column in df.columns[:head_col] %}
-                    {{ column_header(column) | trim}}
+                    {{ column_header(column)}}
                 {% endfor %}
                 {{ column_header("&hellip;") }}
                 {% for column in df.columns[-tail_col:] %}
-                    {{ column_header(column) | trim}}
+                    {{ column_header(column)}}
                 {% endfor %}
             {% endif %}
         </tr>
@@ -109,26 +105,30 @@
         {{ display_rows(df, 0) }}
     {% else %}
         {% set head_rows = (max_rows / 2) | round(0, "ceil") | int %}
-        {% set tail_rows = (max_rows / 2) | round(0, "ceil") | int %}
         {{ display_rows(df.head(head_rows), 0) }}
         <tr> 
             {% if index %}
                 {% for i in range(levels) %}
-                    <th> &hellip; </th>
+                    <th>&hellip;</th>
                 {% endfor %}
             {% endif %}
 
             {% if split_cols %}
                 {% for i in range(max_cols + 1) %}
-                    <td> &hellip; </td>
+                    <td>&hellip;</td>
                 {% endfor %}
             {% else %}
                 {% for i in range(df.columns | length) %}
-                    <td> &hellip; </td>
+                    <td>&hellip;</td>
                 {% endfor %}
             {% endif %}
         </tr>
-        {{ display_rows(df.tail(tail_rows), 0) }}
+        {% set tail_rows = (max_rows / 2) | round(0, "ceil") | int %}
+        {{ display_rows(df.tail(tail_rows), head_rows + 1) }}
     {% endif %}
   </tbody>
 </table>
+
+{% if show_dimensions %}
+<p>{{ df.shape[0] }} rows &times; {{ df.shape[1] }} cols</p>
+{% endif %}

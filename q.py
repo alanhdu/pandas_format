@@ -5,15 +5,17 @@ import numpy as np
 import pandas as pd
 from pandas.core.common import is_float_dtype
 from pandas.core.config import get_option
+
 from jinja2 import Environment, PackageLoader, Template
 import jinja2
+import markupsafe
 
 
 import blaze as bz
 
 
-df = bz.get_multiindexed_support()
-#df = pd.read_csv("/home/alan/workspace/vind/test/iris.csv")
+#df = bz.get_multiindexed_support()
+df = pd.read_csv("/home/alan/workspace/vind/test/iris.csv")
 
 
 def to_html(df, buf=None, columns=None, col_space=None, header=True,
@@ -27,13 +29,18 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
     if float_format is None:
         float_format = str
 
-    def format_value(value, rown, coln):
+    def format_value(value):
         if value != value:
-            return na_rep
+            r = na_rep
         elif is_float_dtype(np.array(value)):
-            return float_format(value)
+            r = float_format(value)
         else:
-            return str(value)
+            r = str(value)
+
+        if escape:
+            return markupsafe.escape(r)
+        else:
+            return r
 
     def get_rowspan(mi, key, level):
         count = 0
@@ -59,7 +66,7 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
     return template.render(df=df, levels=levels, bold_rows=bold_rows,
                 header=header, col_space=col_space, index=index, 
                 sparsify=sparsify, index_names=index_names,
-                justify=justify, max_rows=max_rows, max_cols=max_cols)
+                justify=justify, max_rows=max_rows, max_cols=max_cols,
+                show_dimensions=show_dimensions)
 
-df.index.rename(["module", "name"], inplace=True)
-print(to_html(df, max_rows=20))
+print(to_html(df, max_rows=20, max_cols=2, escape=False))
