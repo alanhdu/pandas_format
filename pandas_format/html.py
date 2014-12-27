@@ -10,14 +10,6 @@ from jinja2 import Environment, PackageLoader, Template
 import jinja2
 import markupsafe
 
-
-import blaze as bz
-
-
-#df = bz.get_multiindexed_support()
-df = pd.read_csv("/home/alan/workspace/vind/test/iris.csv")
-
-
 def to_html(df, buf=None, columns=None, col_space=None, header=True,
             index=True, na_rep='NaN', formatters=None,
             float_format=None, sparsify=True, index_names=True,
@@ -68,5 +60,3 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
                 sparsify=sparsify, index_names=index_names,
                 justify=justify, max_rows=max_rows, max_cols=max_cols,
                 show_dimensions=show_dimensions)
-
-print(to_html(df, max_rows=20, max_cols=2, escape=False))

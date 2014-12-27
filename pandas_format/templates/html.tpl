@@ -1,18 +1,18 @@
 {% macro row_header(header, rowspan) %}
     {% if col_space is not none %}
-        {% set style = "min-width: " ~ col_space ~ ";" %}
+        {% set style = " style = 'min-width: " ~ col_space ~ ";'" %}
     {% else %}
         {% set style = "" %}
     {% endif %}
     {% if rowspan > 1 %}
-        {% set row = "rowspan=" ~ rowspan %}
+        {% set row = " rowspan=" ~ rowspan %}
     {% else %}
         {% set row = "" %}
     {% endif %}
     {% if bold_rows %}
-        <th {{ style }} {{ row }}>{{ header | format_value }}</th>
+        <th{{ style }}{{ row }}>{{ header | format_value }}</th>
     {% else %}
-        <td {{ style }} {{ row }}>{{ header | format_value }}</th>
+        <td{{ style }}{{ row }}>{{ header | format_value }}</th>
     {% endif %}
 {% endmacro %}
 
