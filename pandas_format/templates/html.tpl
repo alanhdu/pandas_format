@@ -33,10 +33,10 @@
 	  {% endif %}
 	  <tbody>
 		{% if max_rows >= (df | length) %}
-			{{ display_rows(df) }}
+			{{ display_rows(df, 0) }}
 		{% else %}
 			{% set head_rows = (max_rows / 2) | round(0, "floor") | int %}
-			{{ display_rows(df.head(head_rows)) }}
+			{{ display_rows(df.head(head_rows), 0) }}
 			<tr> 
 				{% if index %}
 					{% for i in range(levels) %}
@@ -54,11 +54,10 @@
 				{% endif %}
 			</tr>
 			{% set tail_rows = (max_rows / 2) | round(0, "ceil") | int %}
-			{{ display_rows(df.tail(tail_rows)) }}
+			{{ display_rows(df.tail(tail_rows), (df | length) - tail_rows) }}
 		{% endif %}
 	</tbody>
 </table>
-
 {% if show_dimensions %}
 <p>{{ df.shape[0] }} rows &times; {{ df.shape[1] }} cols</p>
 {% endif %}
