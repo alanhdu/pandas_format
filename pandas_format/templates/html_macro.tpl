@@ -1,18 +1,8 @@
-{% macro row_header(header, rowspan) %}
-    {% if col_space is not none %}
-        {% set style = " style = 'min-width: " ~ col_space ~ ";'" %}
-    {% else %}
-        {% set style = "" %}
-    {% endif %}
-    {% if rowspan > 1 %}
-        {% set row = " rowspan=" ~ rowspan %}
-    {% else %}
-        {% set row = "" %}
-    {% endif %}
+{% macro row_header(header, d) %}
     {% if bold_rows %}
-        <th{{ style }}{{ row }}>{{ header | format_value }}</th>
+        <th {{ d | inline }}>{{ header | format_value }}</th>
     {% else %}
-        <td{{ style }}{{ row }}>{{ header | format_value }}</th>
+        <td {{ d | inline }}>{{ header | format_value }}</th>
     {% endif %}
 {% endmacro %}
 
@@ -24,23 +14,23 @@
     {% endif %}
 {% endmacro %}
 
-{% macro display_rows(rows) %}
+{% macro display_rows(rows, start) %}
     {% set dindex = rows.index.tolist() %}
     {% for tuple in rows.itertuples() %}
         {% set outerloop = loop %}
         <tr>
             {% if index %}
                 {% if levels == 1 %}
-                    {{ row_header(tuple[0], 0) }}
+                    {% set d = index_style(dindex, outerloop.index0) %}
+                    {{ row_header(tuple[0], d) }}
                 {% else %}
                     {% for i in tuple[0] %}
-                        {% if not sparsify %}
-                            {{ row_header(i, 0) }}
-                        {% elif outerloop.first or dindex[outerloop.index0 - 1][loop.index0] != i %}
-                            {{ row_header(i, get_rowspan(rows, i, loop.index0)) }}
+                        {% set d = index_style(dindex, outerloop.index0, loop.index0, outerloop.first) %}
+                        {% if "rowspan" in d %}
+                            {{ row_header(i, d) }}
                         {% endif %}
                     {% endfor %}
-               {% endif %}
+                {% endif %}
             {% endif %}
             {% if not split_cols %}
                 {% for value in tuple[1:] %}

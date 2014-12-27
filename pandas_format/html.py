@@ -3,27 +3,28 @@ from collections import Counter
 
 import numpy as np
 import pandas as pd
+from IPython import embed
 from pandas.core.common import is_float_dtype
 from pandas.core.config import get_option
 
 from jinja2 import Environment, PackageLoader, Template
 import markupsafe
 
-def _to_html(df, col_space=None, header=True, index=True, format_value=None,
-             inline=None, sparsify=True, index_names=True, justify=True,
-             bold_rows=True, classes=None, max_rows=float('inf'), 
-             max_cols=float('inf'), show_dimensions=False):
+env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
+                  lstrip_blocks=True)
 
-    env = Environment(loader=PackageLoader("pandas_format"),
-                      trim_blocks=True, lstrip_blocks=True)
+def dict_to_inline(d):
+    return " ".join("{}={}".format(k, repr(v)) for k, v in d.items())
+
+def _to_html(df, col_space=None, header=True, index=True, format_value=str,
+             sparsify=True, index_names=True,
+             justify=True, bold_rows=True, classes=None, max_rows=float('inf'),
+             max_cols=float('inf'), show_dimensions=False, index_style=None):
+
     env.filters["format_value"] = format_value
-    def get_rowspan(mi, key, level):
-        count = 0
-        for ts in mi.index.tolist():
-            if ts[level] == key:
-                count += 1
-        return count
-    env.globals.update(get_rowspan=get_rowspan)
+    env.globals["index_style"] = index_style
+    env.filters["inline"] = dict_to_inline
+
     template = env.get_template("html.tpl")
 
     if isinstance(df.index, pd.MultiIndex):
@@ -63,13 +64,23 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
         else:
             return r
 
-    def inline(row, col):
+    def index_style(index_list, i, level=None, first=False):
         d = {}
-        if col_space is not None and row < 0 or col < 0:
-            d[style] = "minwidth: {};".format(col_space)
 
-        return {}
+        if level is not None and sparsify:
+            current = index_list[i][level]
+            if first or index_list[i-1][level] != current:
+                d["rowspan"] = 1
+                for ts in index_list[i+1:]:
+                    if ts[level] == current:
+                        d["rowspan"] += 1
+                    else:
+                        break
+        if col_space is not None:
+            d["style"] = "min-width: {};".format(col_space)
 
-    return _to_html(df, col_space, header, index, format_value, inline, sparsify,
+        return d
+    
+    return _to_html(df, col_space, header, index, format_value, sparsify,
                     index_names, justify, bold_rows, classes, max_rows,
-                    max_cols, show_dimensions)
+                    max_cols, show_dimensions, index_style)
