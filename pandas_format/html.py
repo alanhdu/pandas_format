@@ -17,7 +17,7 @@ def dict_to_inline(d):
     return " ".join("{}={}".format(k, repr(v)) for k, v in d.items())
 
 def _to_html(df, col_space=None, header=True, index=True, format_value=str,
-             sparsify=True, index_names=True,
+             index_names=True,
              justify=True, bold_rows=True, classes=None, max_rows=float('inf'),
              max_cols=float('inf'), show_dimensions=False, index_style=None):
 
@@ -34,20 +34,20 @@ def _to_html(df, col_space=None, header=True, index=True, format_value=str,
 
     return template.render(df=df, levels=levels, bold_rows=bold_rows,
                 header=header, col_space=col_space, index=index, 
-                sparsify=sparsify, index_names=index_names,
+                index_names=index_names,
                 justify=justify, max_rows=max_rows, max_cols=max_cols,
                 show_dimensions=show_dimensions)
 
 def to_html(df, buf=None, columns=None, col_space=None, header=True,
             index=True, na_rep='NaN', formatters=None,
-            float_format=None, sparsify=True, index_names=True,
-            justify=None, bold_rows=True, classes=None, escape=True,
+            float_format=str, sparsify=True, index_names=True,
+            justify="", bold_rows=True, classes=None, escape=True,
             max_rows=float('inf'), max_cols=float('inf'),
             show_dimensions=False):
     if columns is not None:
         df = df[columns]
-    if float_format is None:
-        float_format = str
+    if justify:
+        justify = 'style = "text-align: {};"'.format(justify)
 
     index_names = index_names and any(df.index.names)
 
@@ -80,7 +80,7 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
             d["style"] = "min-width: {};".format(col_space)
 
         return d
-    
-    return _to_html(df, col_space, header, index, format_value, sparsify,
+
+    return _to_html(df, col_space, header, index, format_value,
                     index_names, justify, bold_rows, classes, max_rows,
                     max_cols, show_dimensions, index_style)

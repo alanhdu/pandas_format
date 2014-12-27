@@ -2,11 +2,7 @@
 <table border=1 class="dataframe">
 	{% if header %}
 		<thead>
-			{% if justify is not none %}
-				<tr style="text-align: {{ justify }};">
-			{% else %}
-				<tr>
-			{% endif %}
+			<tr {{ justify }}>
 				{% if index %}
 					{% for name in df.index.names %}
 						{% if index_names %}
@@ -39,7 +35,7 @@
 		{% if max_rows >= (df | length) %}
 			{{ display_rows(df) }}
 		{% else %}
-			{% set head_rows = (max_rows / 2) | round(0, "ceil") | int %}
+			{% set head_rows = (max_rows / 2) | round(0, "floor") | int %}
 			{{ display_rows(df.head(head_rows)) }}
 			<tr> 
 				{% if index %}
@@ -47,7 +43,6 @@
 						<th>&hellip;</th>
 					{% endfor %}
 				{% endif %}
-
 				{% if split_cols %}
 					{% for i in range(max_cols + 1) %}
 						<td>&hellip;</td>
