@@ -24,7 +24,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro display_rows(rows, outerloop) %}
+{% macro display_rows(rows) %}
     {% set dindex = rows.index.tolist() %}
     {% for tuple in rows.itertuples() %}
         {% set outerloop = loop %}
@@ -37,7 +37,7 @@
                         {% if not sparsify %}
                             {{ row_header(i, 0) }}
                         {% elif outerloop.first or dindex[outerloop.index0 - 1][loop.index0] != i %}
-                           {{ row_header(i, get_rowspan(rows, i, loop.index0)) }}
+                            {{ row_header(i, get_rowspan(rows, i, loop.index0)) }}
                         {% endif %}
                     {% endfor %}
                {% endif %}

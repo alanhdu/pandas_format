@@ -21,6 +21,8 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
     if float_format is None:
         float_format = str
 
+    index_names = index_names and any(df.index.names)
+
     def format_value(value):
         if value != value:
             r = na_rep
@@ -46,7 +48,7 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
     env = Environment(loader=PackageLoader("pandas_format"),
                       trim_blocks=True, lstrip_blocks=True)
     env.filters["format_value"] = format_value
-    env.globals.update(any=any, get_rowspan=get_rowspan)
+    env.globals.update(get_rowspan=get_rowspan)
     jinja2.filters.FILTERS["format_value"] = format_value
     template = env.get_template("html.tpl")
 

@@ -9,7 +9,7 @@
         {% endif %}
             {% if index %}
                 {% for name in df.index.names %}
-                    {% if index_names and any(df.index.names) %}
+                    {% if index_names %}
                         <th> {{ name | format_value }} </th>
                     {% else %}
                         <th> </th>
@@ -37,10 +37,10 @@
   {% endif %}
   <tbody>
     {% if max_rows >= (df | length) %}
-        {{ display_rows(df, 0) }}
+        {{ display_rows(df) }}
     {% else %}
         {% set head_rows = (max_rows / 2) | round(0, "ceil") | int %}
-        {{ display_rows(df.head(head_rows), 0) }}
+        {{ display_rows(df.head(head_rows)) }}
         <tr> 
             {% if index %}
                 {% for i in range(levels) %}
@@ -59,7 +59,7 @@
             {% endif %}
         </tr>
         {% set tail_rows = (max_rows / 2) | round(0, "ceil") | int %}
-        {{ display_rows(df.tail(tail_rows), head_rows + 1) }}
+        {{ display_rows(df.tail(tail_rows)) }}
     {% endif %}
   </tbody>
 </table>
