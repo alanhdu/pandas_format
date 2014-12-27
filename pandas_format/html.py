@@ -16,13 +16,15 @@ env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
 def dict_to_inline(d):
     return " ".join("{}={}".format(k, repr(v)) for k, v in d.items())
 
-def _to_html(df, col_space=None, header=True, index=True, format_value=str,
+def _to_html(df, header=True, index=True, format_value=str,
              index_names=True,
              justify=True, bold_rows=True, classes=None, max_rows=float('inf'),
-             max_cols=float('inf'), show_dimensions=False, index_style=None):
+             max_cols=float('inf'), show_dimensions=False, index_style=None,
+             column_style=None):
 
     env.filters["format_value"] = format_value
     env.globals["index_style"] = index_style
+    env.globals["column_style"] = column_style
     env.filters["inline"] = dict_to_inline
 
     template = env.get_template("html.tpl")
@@ -33,7 +35,7 @@ def _to_html(df, col_space=None, header=True, index=True, format_value=str,
         levels = 1
 
     return template.render(df=df, levels=levels, bold_rows=bold_rows,
-                header=header, col_space=col_space, index=index, 
+                header=header, index=index, 
                 index_names=index_names,
                 justify=justify, max_rows=max_rows, max_cols=max_cols,
                 show_dimensions=show_dimensions)
@@ -81,6 +83,12 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
 
         return d
 
-    return _to_html(df, col_space, header, index, format_value,
+    def column_style(columns, i):
+        d = {}
+        if col_space is not None:
+            d["style"] = "min-width: {};".format(col_space)
+        return d
+
+    return _to_html(df, header, index, format_value,
                     index_names, justify, bold_rows, classes, max_rows,
-                    max_cols, show_dimensions, index_style)
+                    max_cols, show_dimensions, index_style, column_style)

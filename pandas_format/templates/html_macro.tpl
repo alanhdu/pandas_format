@@ -6,12 +6,9 @@
     {% endif %}
 {% endmacro %}
 
-{% macro column_header(header) %}
-    {% if col_space is not none %}
-        <th style='min-width: {{col_space }};'>{{ header | format_value}}</th>
-    {% else %}
-        <th>{{ header }}</th>
-    {% endif %}
+{% macro column_header(header, i) %}
+	{% set d = column_style(df.columns, i) %}
+	<th {{ d | inline}}> {{ header }} </th>
 {% endmacro %}
 
 {% macro display_rows(rows, start) %}

@@ -15,17 +15,17 @@
 				{% set split_cols = max_cols < df.columns | length %}
 				{% if not split_cols %}
 					{% for column in df.columns %}
-						{{ column_header(column)}}
+						{{ column_header(column, loop.index0)}}
 					{% endfor %}
 				{% else %}
 					{% set head_col = (max_cols / 2) | round(0, "ceil") | int %}
 					{% set tail_col = (max_cols / 2) | round(0, "floor") | int %}
 					{% for column in df.columns[:head_col] %}
-						{{ column_header(column)}}
+						{{ column_header(column, loop.index0)}}
 					{% endfor %}
 					{{ column_header("&hellip;") }}
 					{% for column in df.columns[-tail_col:] %}
-						{{ column_header(column)}}
+						{{ column_header(column, tail_col + loop.index0)}}
 					{% endfor %}
 				{% endif %}
 			</tr>

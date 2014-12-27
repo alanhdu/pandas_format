@@ -11,4 +11,4 @@ with open("pandas.html", "w") as fout:
     fout.write(df.to_html(max_cols=4, max_rows=11))
 
 with open("jinja2.html", "w") as fout:
-    fout.write(pf.to_html(df, max_cols=4, max_rows=11))
+    fout.write(pf.to_html(df, max_cols=4, max_rows=11, col_space=50))
