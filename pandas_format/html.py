@@ -13,19 +13,27 @@ import markupsafe
 env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
                   lstrip_blocks=True)
 
+def _inline(key, value):
+    if value is None:
+        return str(key)
+    else:
+        return str(key) + "=" + repr(value)
 def dict_to_inline(d):
-    return " ".join("{}={}".format(k, repr(v)) for k, v in d.items())
+    if d:
+        return " " + " ".join(_inline(k, v) for k, v in d.items())
+    else:
+        return ""
 
-def _to_html(df, header=True, index=True, format_value=str,
-             index_names=True,
-             justify=True, bold_rows=True, classes=None, max_rows=float('inf'),
-             max_cols=float('inf'), show_dimensions=False, index_style=None,
-             column_style=None):
+    return _to_html(df, header, index, index_names, justify, bold_rows, 
+                    max_rows, max_cols, show_dimensions, styler)
+env.filters["inline"] = dict_to_inline
 
-    env.filters["format_value"] = format_value
-    env.globals["index_style"] = index_style
-    env.globals["column_style"] = column_style
-    env.filters["inline"] = dict_to_inline
+def _to_html(df, header=True, index=True, index_names=True, justify=True, 
+             bold_rows=True, max_rows=float('inf'), max_cols=float('inf'),
+             show_dimensions=False, styler=None):
+
+    env.filters["format_value"] = styler.format_value
+    env.globals["styler"] = styler
 
     template = env.get_template("html.tpl")
 
@@ -35,60 +43,89 @@ def _to_html(df, header=True, index=True, format_value=str,
         levels = 1
 
     return template.render(df=df, levels=levels, bold_rows=bold_rows,
-                header=header, index=index, 
-                index_names=index_names,
+                header=header, index=index, index_names=index_names,
                 justify=justify, max_rows=max_rows, max_cols=max_cols,
                 show_dimensions=show_dimensions)
 
 def to_html(df, buf=None, columns=None, col_space=None, header=True,
-            index=True, na_rep='NaN', formatters=None,
-            float_format=str, sparsify=True, index_names=True,
-            justify="", bold_rows=True, classes=None, escape=True,
-            max_rows=float('inf'), max_cols=float('inf'),
-            show_dimensions=False):
+            index=True, na_rep='NaN', formatters=None, float_format=str,
+            sparsify=True, index_names=True, justify="", bold_rows=True,
+            classes=None, escape=True, max_rows=float('inf'),
+            max_cols=float('inf'), show_dimensions=False):
     if columns is not None:
         df = df[columns]
     if justify:
         justify = 'style = "text-align: {};"'.format(justify)
 
     index_names = index_names and any(df.index.names)
+    styler = HtmlStyler(df, col_space, na_rep, formatters, float_format, sparsify, classes, escape)
 
-    def format_value(value):
+    return _to_html(df, header, index, index_names, justify, bold_rows, 
+                    max_rows, max_cols, show_dimensions, styler)
+
+class Styler(object):
+    def __init__(self, df):
+        self.df = df
+        self.indices = df.index.tolist()
+    def format_value(self, value):
+        return markupsafe.escape(str(r))
+    def index_style(self, i, level=None, first=False):
+        d = {}
+
+        if level is not None and self.sparsify:
+            current = self.indices[i][level]
+            if first or self.indices[i-1][level] != current:
+                d["rowspan"] = 1
+                for index in self.indices[i+1:]:
+                    if index[level] == current:
+                        d["rowspan"] += 1
+                    else:
+                        break
+        return d
+
+    def column_style(self, i):
+        return {}
+
+    def value_style(self, row, col):
+        return {}
+
+
+class HtmlStyler(Styler):
+    def __init__(self, df, col_space=None, na_rep='NaN', formatters=None, float_format=str,
+                sparsify=True, classes=None, escape=True):
+        super(HtmlStyler, self).__init__(df)
+
+        self.col_space = col_space
+        self.na_rep = na_rep
+        self.escape = True
+
+        self.formatters = formatters
+        self.classes = classes
+
+        self.float_format = float_format
+        self.sparsify = sparsify
+
+    def format_value(self, value):
         if value != value:
-            r = na_rep
+            r = self.na_rep
         elif is_float_dtype(np.array(value)):
-            r = float_format(value)
+            r = self.float_format(value)
         else:
             r = str(value)
 
-        if escape:
+        if self.escape:
             return markupsafe.escape(r)
         else:
             return r
 
-    def index_style(index_list, i, level=None, first=False):
-        d = {}
-
-        if level is not None and sparsify:
-            current = index_list[i][level]
-            if first or index_list[i-1][level] != current:
-                d["rowspan"] = 1
-                for ts in index_list[i+1:]:
-                    if ts[level] == current:
-                        d["rowspan"] += 1
-                    else:
-                        break
-        if col_space is not None:
-            d["style"] = "min-width: {};".format(col_space)
-
+    def index_style(self, i, level=None, first=False):
+        d = super(HtmlStyler, self).index_style(i, level, first)
+        if self.col_space is not None:
+            d["style"] = "min-width: {};".format(self.col_space)
         return d
 
-    def column_style(columns, i):
-        d = {}
-        if col_space is not None:
-            d["style"] = "min-width: {};".format(col_space)
-        return d
-
-    return _to_html(df, header, index, format_value,
-                    index_names, justify, bold_rows, classes, max_rows,
-                    max_cols, show_dimensions, index_style, column_style)
+    def column_style(self, i):
+        if self.col_space is not None:
+            return {"style": "min-width: {};".format(self.col_space)}
+        else:
+            return {}
