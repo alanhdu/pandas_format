@@ -23,13 +23,13 @@ def _to_string(df, header=True, index=True, max_rows=float('inf'),
     else:
         levels = 1
 
-    return template.render(df=df, header=header, index=index, levels=levels)
+    return template.render(df=df, header=header, index=index, levels=levels,
+                           show_dimensions=show_dimensions)
 
-def to_string(df, buf=None, columns=None, col_space=None, header=True,
+def to_string(df, buf=None, columns=None, col_space=0, header=True,
               index=True, na_rep='NaN', formatters=None, float_format=str,
               sparsify=True, index_names=True, justify="left", line_width=True,
-              escape=True, max_rows=float('inf'),
-              max_cols=float('inf'), show_dimensions=False):
+              max_rows=float('inf'), max_cols=float('inf'), show_dimensions=False):
     if columns is not None:
         df = df[columns]
     index_names = index_names and any(df.index.names)
@@ -61,7 +61,7 @@ def pad(string, width, justify="left"):
 
 
 class StringStyler(Styler):
-    def __init__(self, df, col_space=None, na_rep='NaN', formatters=None,
+    def __init__(self, df, col_space=0, na_rep='NaN', formatters=None,
                  float_format=str, justify="left", sparsify=True, index_names=True):
         super(StringStyler, self).__init__(df, na_rep, formatters, float_format)
 
@@ -70,7 +70,7 @@ class StringStyler(Styler):
         self.sparsify = sparsify
         self.index_names = index_names
 
-        self.widths = [0 for x in df.columns]
+        self.widths = [col_space for x in df.columns]
         for r, row in enumerate(df.itertuples()):
             for c, value in enumerate(row[1:]):
                 value = self.format_value(value, r, c)

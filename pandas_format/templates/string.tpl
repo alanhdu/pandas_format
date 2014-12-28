@@ -1,6 +1,6 @@
 {% if header %}
     {% if index %}
-        {% for name in df.index.names %} {{ styler.format_index_name(loop.index0) }} {% endfor %}
+        {% for name in df.index.names -%} {{ styler.format_index_name(loop.index0) }} {%- endfor %}
     {% endif %}
     {% for col in df %} {{ styler.format_column_header(loop.index0) }} {% endfor %} 
 {% endif %}
@@ -16,3 +16,7 @@
     {% for val in row[1:] %} {{ val | format_value(outerloop.index0, loop.index0) }} {% endfor %}
 
 {% endfor %}
+{% if show_dimensions %}
+
+[{{ df.shape[0] }} rows x {{ df.shape[1] }} columns]
+{%- endif %}
