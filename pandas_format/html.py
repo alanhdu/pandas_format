@@ -1,14 +1,10 @@
-from collections import Mapping, Sequence
-
 import numpy as np
 import pandas as pd
-from pandas.core.common import is_float_dtype
 
 from jinja2 import Environment, PackageLoader
 import markupsafe
 
-env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
-                  lstrip_blocks=True)
+from .core import Styler
 
 def _inline(key, value):
     if value is None:
@@ -21,12 +17,14 @@ def dict_to_inline(d):
     else:
         return ""
 
-env.filters["inline"] = dict_to_inline
 
 def _to_html(df, header=True, index=True, index_names=True,
              bold_rows=True, max_rows=float('inf'), max_cols=float('inf'),
              show_dimensions=False, styler=None):
 
+    env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
+                      lstrip_blocks=True)
+    env.filters["inline"] = dict_to_inline
     env.filters["format_value"] = styler.format_value
     env.globals["styler"] = styler
 
@@ -51,7 +49,7 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
         df = df[columns]
 
     index_names = index_names and any(df.index.names)
-    styler = HtmlStyler(df, col_space, na_rep, formatters, float_format,
+    styler = DefaultHtmlStyler(df, col_space, na_rep, formatters, float_format,
                         justify, sparsify, classes, escape)
 
     ret = _to_html(df, header, index, index_names, bold_rows, max_rows,
@@ -61,21 +59,9 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
     else:
         buf.write(ret)
 
-class Styler(object):
-    def __init__(self, df):
-        self.df = df
-        self.indices = df.index.tolist()
-    def format_value(self, value):
-        return markupsafe.escape(str(value))
-
-    def index_style(self, i, level=None, first=False):
-        return {}
-
-    def header_style(self, i):
-        return {}
-
-    def value_style(self, row, col):
-        return {}
+class HtmlStyler(Styler):
+    def table_style(self):
+        return {"border": 1, "class": "dataframe"}
 
     def tbody_style(self):
         return {}
@@ -83,55 +69,23 @@ class Styler(object):
     def thead_style(self):
         return {}
 
-    def row_style(self, i):
-        return {}
-
-    def table_style(self):
-        return {"border": 1, "class": "dataframe"}
-
-
-class HtmlStyler(Styler):
+class DefaultHtmlStyler(HtmlStyler):
     def __init__(self, df, col_space=None, na_rep='NaN', formatters=None,
                  float_format=str, justify=None, sparsify=True, classes=None,
                  escape=True):
-        super(HtmlStyler, self).__init__(df)
+        super(DefaultHtmlStyler, self).__init__(df, na_rep, formatters,
+                                                float_format)
 
         self.col_space = col_space
-        self.na_rep = na_rep
         self.escape = escape
         self.justify = justify
 
-        self.float_format = float_format
         self.sparsify = sparsify
 
-        self.formatters = formatters
         self.classes = classes
 
-        if isinstance(self.formatters, Sequence):
-            if len(self.formatters) != len(self.df.columns):
-                raise IndexError
-
     def format_value(self, value, row, col):
-        if self.formatters is not None:
-            columns = self.df.columns
-            if isinstance(self.formatters, Mapping):
-                column = columns[col]
-                if column in self.formatters:
-                    return self.formatters[column](value)
-            elif isinstance(self.formatters, Sequence):
-                if len(columns) == len(self.formatters):
-                    return self.formatters[col](value)
-                else:
-                    raise IndexError
-            else:
-                raise Exception
-
-        if value != value:
-            value = self.na_rep
-        elif is_float_dtype(np.array(value)):
-            value = self.float_format(value)
-        else:
-            value = str(value)
+        value = super(DefaultHtmlStyler, self).format_value(value, row, col)
 
         if self.escape:
             return markupsafe.escape(value)
@@ -161,7 +115,7 @@ class HtmlStyler(Styler):
             return {}
 
     def table_style(self):
-        inline = super(HtmlStyler, self).table_style()
+        inline = super(DefaultHtmlStyler, self).table_style()
         if isinstance(self.classes, str):
             inline["class"] += " " + self.classes
         elif self.classes is not None:
