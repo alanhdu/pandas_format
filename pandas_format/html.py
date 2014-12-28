@@ -1,5 +1,5 @@
 from __future__ import print_function
-from collections import Counter
+from collections import Counter, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
@@ -111,13 +111,31 @@ class HtmlStyler(Styler):
         self.escape = True
         self.justify = justify
 
-        self.formatters = formatters
-        self.classes = classes
-
         self.float_format = float_format
         self.sparsify = sparsify
 
-    def format_value(self, value):
+        self.formatters = formatters
+        self.classes = classes
+
+        if isinstance(self.formatters, Sequence):
+            if len(self.formatters) != len(self.df.columns):
+                raise IndexError
+
+    def format_value(self, value, row, col):
+        if self.formatters is not None:
+            columns = self.df.columns
+            if isinstance(self.formatters, Mapping):
+                column = columns[col]
+                if column in self.formatters:
+                    return self.formatters[column](value)
+            elif isinstance(self.formatters, Sequence):
+                if len(columns) == len(self.formatters):
+                    return self.formatters[col](value)
+                else:
+                    raise IndexError
+            else:
+                raise Exception
+
         if value != value:
             r = self.na_rep
         elif is_float_dtype(np.array(value)):

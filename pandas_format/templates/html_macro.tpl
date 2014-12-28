@@ -1,8 +1,8 @@
 {% macro row_header(header, d) %}
 	{% if bold_rows %}
-		<th{{ d | inline }}>{{ header | format_value }}</th>
+		<th{{ d | inline }}>{{ header }}</th>
 	{% else %}
-		<td{{ d | inline }}>{{ header | format_value }}</th>
+		<td{{ d | inline }}>{{ header }}</th>
 	{% endif %}
 {% endmacro %}
 
@@ -32,17 +32,17 @@
 			{% if not split_cols %}
 				{% for value in tuple[1:] %}
 					{% set d = styler.value_style(outerloop.index0 + start, loop.index0) %}
-					<td{{ d | inline }}>{{ value | format_value }}</td>
+					<td{{ d | inline }}>{{ value | format_value(outerloop.index0 + start, loop.index0) }}</td>
 				{% endfor %}
 			{% else %}
 				{% for value in tuple[1:head_col + 1] %}
 					{% set d = styler.value_style(outerloop.index0 + start, loop.index0) %}
-					<td{{ d | inline }}>{{ value | format_value }}</td>
+					<td{{ d | inline }}>{{ value | format_value(outerloop.index0 + start, loop.index0) }}</td>
 				{% endfor %}
 				<td> &hellip; </td>
 				{% for value in tuple[-tail_col:] %}
-					{% set d = styler.value_style(outerloop.index0 + start, loop.index0 + tail_col) %}
-					<td{{ d | inline }}>{{ value | format_value }}</td>
+					{% set d = styler.value_style(outerloop.index0 + start, df | length - loop.revindex0) %}
+					<td{{ d | inline }}>{{ value | format_value(outerloop.index0 + start, df | length - loop.revindex0) }} </td>
 				{% endfor %}
 			{% endif %}
 		  </tr>

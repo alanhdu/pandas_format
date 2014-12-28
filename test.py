@@ -8,7 +8,7 @@ mi = pd.MultiIndex.from_tuples([(a, b, c) for a in range(5)
 mi_df = pd.DataFrame(np.random.rand(125, 5), index=mi)
 
 with open("pandas.html", "w") as fout:
-    fout.write(df.to_html())
+    fout.write(df.to_html(formatters={"Name":str.upper}))
 
 with open("jinja2.html", "w") as fout:
-    fout.write(pf.to_html(df))
+    fout.write(pf.to_html(df, max_rows=11, formatters={"Name":str.upper}))
