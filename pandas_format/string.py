@@ -1,16 +1,11 @@
-from __future__ import print_function
-
-import numpy as np
 import pandas as pd
-from pandas.core.common import is_float_dtype
 
 from jinja2 import Environment, PackageLoader
 
 from .core import Styler
 
-def _to_string(df, header=True, index=True, max_rows=float('inf'), 
-               max_cols=float('inf'),
-               show_dimensions=False, styler=None):
+def _to_string(df, header=True, index=True, max_rows=float('inf'),
+               max_cols=float('inf'), show_dimensions=False, styler=None):
     env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
                       lstrip_blocks=True)
     env.filters["format_value"] = styler.format_value
@@ -27,10 +22,11 @@ def _to_string(df, header=True, index=True, max_rows=float('inf'),
                            show_dimensions=show_dimensions, max_rows=max_rows,
                            max_cols=max_cols)
 
-def to_string(df, buf=None, columns=None, col_space=0, header=True,
-              index=True, na_rep='NaN', formatters=None, float_format=str,
-              sparsify=True, index_names=True, justify="left", line_width=True,
-              max_rows=float('inf'), max_cols=float('inf'), show_dimensions=False):
+def to_string(df, buf=None, columns=None, col_space=0, header=True, index=True,
+              na_rep='NaN', formatters=None, float_format=str, sparsify=True,
+              index_names=True, justify="left", line_width=True,
+              max_rows=float('inf'), max_cols=float('inf'),
+              show_dimensions=False):
     if columns is not None:
         df = df[columns]
     index_names = index_names and any(df.index.names)
@@ -46,24 +42,25 @@ def to_string(df, buf=None, columns=None, col_space=0, header=True,
         buf.write(ret)
 
 def pad(string, width, justify="left"):
-    l = width - len(string)
+    width = width - len(string)
     if justify == "left":
-        return string + l * " "
+        return string + width * " "
     elif justify == "right":
-        return l * " " + string
+        return width * " " + string
     elif justify == "center":
-        p = " " * (l // 2)
-        if l % 2 == 0:
-            return p + string + p
+        half = " " * (width // 2)
+        if width % 2 == 0:
+            return half + string + half
         else:
-            return " " + p + string + p
+            return " " + half + string + half
     else:
         raise Exception()
 
 
 class StringStyler(Styler):
     def __init__(self, df, col_space=0, na_rep='NaN', formatters=None,
-                 float_format=str, justify="left", sparsify=True, index_names=True):
+                 float_format=str, justify="left", sparsify=True, 
+                 index_names=True):
         super(StringStyler, self).__init__(df, na_rep, formatters, float_format)
 
         self.col_space = col_space
@@ -110,7 +107,7 @@ class StringStyler(Styler):
             return pad(str(value), self.index_widths[level])
         else:
             return " " * self.index_widths[level]
-        
+
     def format_index_name(self, level=0):
         if self.index_names:
             name = str(self.df.index.names[level])
