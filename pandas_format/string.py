@@ -9,7 +9,6 @@ def _to_string(df, header=True, index=True, max_rows=float('inf'),
     env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
                       lstrip_blocks=True)
     env.filters["format_value"] = styler.format_value
-    env.globals["styler"] = styler
 
     template = env.get_template("string.tpl")
 
@@ -18,9 +17,9 @@ def _to_string(df, header=True, index=True, max_rows=float('inf'),
     else:
         levels = 1
 
-    return template.render(df=df, header=header, index=index, levels=levels,
-                           show_dimensions=show_dimensions, max_rows=max_rows,
-                           max_cols=max_cols)
+    return template.render(df=df, styler=styler, header=header, index=index,
+                           levels=levels, max_rows=max_rows, max_cols=max_cols,
+                           show_dimensions=show_dimensions)
 
 def to_string(df, buf=None, columns=None, col_space=0, header=True, index=True,
               na_rep='NaN', formatters=None, float_format=str, sparsify=True,

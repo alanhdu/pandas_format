@@ -26,7 +26,6 @@ def _to_html(df, header=True, index=True, index_names=True,
                       lstrip_blocks=True)
     env.filters["inline"] = dict_to_inline
     env.filters["format_value"] = styler.format_value
-    env.globals["styler"] = styler
 
     template = env.get_template("html.tpl")
 
@@ -35,10 +34,10 @@ def _to_html(df, header=True, index=True, index_names=True,
     else:
         levels = 1
 
-    return template.render(df=df, levels=levels, bold_rows=bold_rows,
-                           header=header, index=index, index_names=index_names,
-                           max_rows=max_rows, max_cols=max_cols,
-                           show_dimensions=show_dimensions)
+    return template.render(df=df, styler=styler, levels=levels, header=header,
+                           bold_rows=bold_rows, index_names=index_names,
+                           index=index, max_rows=max_rows, max_cols=max_cols,
+                           showdimensions=show_dimensions)
 
 def to_html(df, buf=None, columns=None, col_space=None, header=True,
             index=True, na_rep='NaN', formatters=None, float_format=str,
