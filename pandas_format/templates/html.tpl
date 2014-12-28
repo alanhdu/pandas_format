@@ -25,7 +25,7 @@
 					{% endfor %}
 					{{ column_header("&hellip;") }}
 					{% for column in df.columns[-tail_col:] %}
-						{{ column_header(column, tail_col + loop.index0)}}
+						{{ column_header(column, (df.columns | length) - loop.revindex)}}
 					{% endfor %}
 				{% endif %}
 			</tr>

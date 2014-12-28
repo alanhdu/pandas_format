@@ -41,8 +41,8 @@
 				{% endfor %}
 				<td> &hellip; </td>
 				{% for value in tuple[-tail_col:] %}
-					{% set d = styler.value_style(outerloop.index0 + start, df | length - loop.revindex0) %}
-					<td{{ d | inline }}>{{ value | format_value(outerloop.index0 + start, df | length - loop.revindex0) }} </td>
+					{% set d = styler.value_style(outerloop.index0 + start, df.columns | length - loop.revindex) %}
+					<td{{ d | inline }}>{{ value | format_value(outerloop.index0 + start, df.columns | length - loop.revindex) }} </td>
 				{% endfor %}
 			{% endif %}
 		  </tr>

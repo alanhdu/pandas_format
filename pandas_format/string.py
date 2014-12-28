@@ -24,7 +24,8 @@ def _to_string(df, header=True, index=True, max_rows=float('inf'),
         levels = 1
 
     return template.render(df=df, header=header, index=index, levels=levels,
-                           show_dimensions=show_dimensions)
+                           show_dimensions=show_dimensions, max_rows=max_rows,
+                           max_cols=max_cols)
 
 def to_string(df, buf=None, columns=None, col_space=0, header=True,
               index=True, na_rep='NaN', formatters=None, float_format=str,
