@@ -102,13 +102,12 @@ class StringStyler(Styler):
         return pad(column, self.widths[col], self.justify)
 
     def format_index(self, row, level=0):
-        val = self.indices[row]
-        if isinstance(val, tuple):
-            val = val[level]
+        value = self.indices[row]
+        if isinstance(value, tuple):
+            value = value[level]
 
-        return pad(str(val), self.index_widths[level])
+        return pad(str(value), self.index_widths[level])
         
-
     def format_index_name(self, level=0):
         if self.index_names:
             name = str(self.df.index.names[level])
