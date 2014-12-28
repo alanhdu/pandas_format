@@ -7,7 +7,7 @@
 {% endmacro %}
 
 {% macro column_header(header, i) %}
-	{% set d = styler.column_style(i) %}
+	{% set d = styler.header_style(i) %}
 	<th{{ d | inline}}> {{ header }} </th>
 {% endmacro %}
 
@@ -15,7 +15,7 @@
 	{% set dindex = rows.index.tolist() %}
 	{% for tuple in rows.itertuples() %}
 		{% set outerloop = loop %}
-		<tr>
+		<tr{{ styler.row_style(outerloop.index0 + start) | inline }}>
 			{% if index %}
 				{% if levels == 1 %}
 					{% set d = styler.index_style(start + outerloop.index0) %}

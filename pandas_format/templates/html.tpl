@@ -1,8 +1,8 @@
 {% from 'html_macro.tpl' import column_header, display_rows with context %}
-<table border=1 class="dataframe">
+<table{{styler.table_style() | inline}}>
 	{% if header %}
-		<thead>
-			<tr {{ justify }}>
+		<thead{{styler.thead_style() | inline}}>
+			<tr>
 				{% if index %}
 					{% for name in df.index.names %}
 						{% if index_names %}
@@ -31,7 +31,7 @@
 			</tr>
 		  </thead>
 	  {% endif %}
-	  <tbody>
+	  <tbody{{ styler.tbody_style() | inline }}>
 		{% if max_rows >= (df | length) %}
 			{{ display_rows(df, 0) }}
 		{% else %}

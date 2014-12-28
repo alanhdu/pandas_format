@@ -24,11 +24,9 @@ def dict_to_inline(d):
     else:
         return ""
 
-    return _to_html(df, header, index, index_names, justify, bold_rows, 
-                    max_rows, max_cols, show_dimensions, styler)
 env.filters["inline"] = dict_to_inline
 
-def _to_html(df, header=True, index=True, index_names=True, justify=True, 
+def _to_html(df, header=True, index=True, index_names=True,
              bold_rows=True, max_rows=float('inf'), max_cols=float('inf'),
              show_dimensions=False, styler=None):
 
@@ -43,25 +41,24 @@ def _to_html(df, header=True, index=True, index_names=True, justify=True,
         levels = 1
 
     return template.render(df=df, levels=levels, bold_rows=bold_rows,
-                header=header, index=index, index_names=index_names,
-                justify=justify, max_rows=max_rows, max_cols=max_cols,
-                show_dimensions=show_dimensions)
+                           header=header, index=index, index_names=index_names,
+                           max_rows=max_rows, max_cols=max_cols,
+                           show_dimensions=show_dimensions)
 
 def to_html(df, buf=None, columns=None, col_space=None, header=True,
             index=True, na_rep='NaN', formatters=None, float_format=str,
-            sparsify=True, index_names=True, justify="", bold_rows=True,
+            sparsify=True, index_names=True, justify=None, bold_rows=True,
             classes=None, escape=True, max_rows=float('inf'),
             max_cols=float('inf'), show_dimensions=False):
     if columns is not None:
         df = df[columns]
-    if justify:
-        justify = 'style = "text-align: {};"'.format(justify)
 
     index_names = index_names and any(df.index.names)
-    styler = HtmlStyler(df, col_space, na_rep, formatters, float_format, sparsify, classes, escape)
+    styler = HtmlStyler(df, col_space, na_rep, formatters, float_format, 
+                        justify, sparsify, classes, escape)
 
-    return _to_html(df, header, index, index_names, justify, bold_rows, 
-                    max_rows, max_cols, show_dimensions, styler)
+    return _to_html(df, header, index, index_names, bold_rows, max_rows,
+                    max_cols, show_dimensions, styler)
 
 class Styler(object):
     def __init__(self, df):
@@ -69,6 +66,7 @@ class Styler(object):
         self.indices = df.index.tolist()
     def format_value(self, value):
         return markupsafe.escape(str(r))
+
     def index_style(self, i, level=None, first=False):
         d = {}
 
@@ -83,21 +81,35 @@ class Styler(object):
                         break
         return d
 
-    def column_style(self, i):
+    def header_style(self, i):
         return {}
 
     def value_style(self, row, col):
         return {}
 
+    def tbody_style(self):
+        return {}
+
+    def thead_style(self):
+        return {}
+
+    def row_style(self, i):
+        return {}
+
+    def table_style(self):
+        return {"border": 1, "class": "dataframe"}
+
 
 class HtmlStyler(Styler):
-    def __init__(self, df, col_space=None, na_rep='NaN', formatters=None, float_format=str,
-                sparsify=True, classes=None, escape=True):
+    def __init__(self, df, col_space=None, na_rep='NaN', formatters=None,
+                 float_format=str, justify=None, sparsify=True, classes=None,
+                 escape=True):
         super(HtmlStyler, self).__init__(df)
 
         self.col_space = col_space
         self.na_rep = na_rep
         self.escape = True
+        self.justify = justify
 
         self.formatters = formatters
         self.classes = classes
@@ -124,8 +136,22 @@ class HtmlStyler(Styler):
             d["style"] = "min-width: {};".format(self.col_space)
         return d
 
-    def column_style(self, i):
+    def header_style(self, i):
         if self.col_space is not None:
             return {"style": "min-width: {};".format(self.col_space)}
+        else:
+            return {}
+
+    def table_style(self):
+        d = super(HtmlStyler, self).table_style()
+        if isinstance(self.classes, str):
+            d["class"] += " " + self.classes
+        elif self.classes is not None:
+            d["class"] += " " + " ".join(self.classes)
+        return d
+
+    def thead_style(self):
+        if self.justify is not None:
+            return {"style": "text-align: {};".format(self.justify)}
         else:
             return {}
