@@ -101,12 +101,15 @@ class StringStyler(Styler):
         column = str(self.df.columns[col])
         return pad(column, self.widths[col], self.justify)
 
-    def format_index(self, row, level=0):
+    def format_index(self, row, level=0, first=None):
         value = self.indices[row]
         if isinstance(value, tuple):
             value = value[level]
 
-        return pad(str(value), self.index_widths[level])
+        if not self.sparsify or first or self.indices[row - 1][level] != value:
+            return pad(str(value), self.index_widths[level])
+        else:
+            return " " * self.index_widths[level]
         
     def format_index_name(self, level=0):
         if self.index_names:

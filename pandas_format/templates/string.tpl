@@ -5,7 +5,7 @@
             {%- if levels == 1 -%}
                 {{ styler.format_index(outerloop.index0 + start) }}
             {%- else -%}
-                {% for index in row[0] %} {{ styler.format_index(outerloop.index0 + start, loop.index0) }} {% endfor %}
+                {% for index in row[0] %} {{ styler.format_index(outerloop.index0 + start, loop.index0, outerloop.first) }} {% endfor %}
             {% endif %}
         {% endif %}
         {% if not split_cols %}
@@ -39,8 +39,8 @@
 {%- else %}
     {% set head_rows = (max_rows / 2) | round(0, "floor") | int -%}
     {{ display_rows(df.head(head_rows), 0) }}
-    {%- set l = display_rows(df.head(1), 0) | length -%}
-    {{ "." * l }}
+    {%- set width = display_rows(df.head(1), 0) | length -%}
+    {{ "." * width }}
     {% set tail_rows = (max_rows / 2) | round(0, "ceil") | int -%}
     {{ display_rows(df.tail(tail_rows), (df | length) - tail_rows) }}
 {% endif %}
