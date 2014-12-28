@@ -1,13 +1,10 @@
-from __future__ import print_function
-from collections import Counter, Mapping, Sequence
+from collections import Mapping, Sequence
 
 import numpy as np
 import pandas as pd
-from IPython import embed
 from pandas.core.common import is_float_dtype
-from pandas.core.config import get_option
 
-from jinja2 import Environment, PackageLoader, Template
+from jinja2 import Environment, PackageLoader
 import markupsafe
 
 env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
@@ -54,32 +51,25 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
         df = df[columns]
 
     index_names = index_names and any(df.index.names)
-    styler = HtmlStyler(df, col_space, na_rep, formatters, float_format, 
+    styler = HtmlStyler(df, col_space, na_rep, formatters, float_format,
                         justify, sparsify, classes, escape)
 
-    return _to_html(df, header, index, index_names, bold_rows, max_rows,
-                    max_cols, show_dimensions, styler)
+    ret = _to_html(df, header, index, index_names, bold_rows, max_rows,
+                   max_cols, show_dimensions, styler)
+    if buf is None:
+        return ret
+    else:
+        buf.write(ret)
 
 class Styler(object):
     def __init__(self, df):
         self.df = df
         self.indices = df.index.tolist()
     def format_value(self, value):
-        return markupsafe.escape(str(r))
+        return markupsafe.escape(str(value))
 
     def index_style(self, i, level=None, first=False):
-        d = {}
-
-        if level is not None and self.sparsify:
-            current = self.indices[i][level]
-            if first or self.indices[i-1][level] != current:
-                d["rowspan"] = 1
-                for index in self.indices[i+1:]:
-                    if index[level] == current:
-                        d["rowspan"] += 1
-                    else:
-                        break
-        return d
+        return {}
 
     def header_style(self, i):
         return {}
@@ -108,7 +98,7 @@ class HtmlStyler(Styler):
 
         self.col_space = col_space
         self.na_rep = na_rep
-        self.escape = True
+        self.escape = escape
         self.justify = justify
 
         self.float_format = float_format
@@ -137,22 +127,32 @@ class HtmlStyler(Styler):
                 raise Exception
 
         if value != value:
-            r = self.na_rep
+            value = self.na_rep
         elif is_float_dtype(np.array(value)):
-            r = self.float_format(value)
+            value = self.float_format(value)
         else:
-            r = str(value)
+            value = str(value)
 
         if self.escape:
-            return markupsafe.escape(r)
+            return markupsafe.escape(value)
         else:
-            return r
+            return value
 
     def index_style(self, i, level=None, first=False):
-        d = super(HtmlStyler, self).index_style(i, level, first)
+        inline = {}
         if self.col_space is not None:
-            d["style"] = "min-width: {};".format(self.col_space)
-        return d
+            inline["style"] = "min-width: {};".format(self.col_space)
+
+        if level is not None and self.sparsify:
+            current = self.indices[i][level]
+            if first or self.indices[i-1][level] != current:
+                inline["rowspan"] = 1
+                for index in self.indices[i+1:]:
+                    if index[level] == current:
+                        inline["rowspan"] += 1
+                    else:
+                        break
+        return inline
 
     def header_style(self, i):
         if self.col_space is not None:
@@ -161,12 +161,12 @@ class HtmlStyler(Styler):
             return {}
 
     def table_style(self):
-        d = super(HtmlStyler, self).table_style()
+        inline = super(HtmlStyler, self).table_style()
         if isinstance(self.classes, str):
-            d["class"] += " " + self.classes
+            inline["class"] += " " + self.classes
         elif self.classes is not None:
-            d["class"] += " " + " ".join(self.classes)
-        return d
+            inline["class"] += " " + " ".join(self.classes)
+        return inline
 
     def thead_style(self):
         if self.justify is not None:
