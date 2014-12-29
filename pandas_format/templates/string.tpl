@@ -1,70 +1,55 @@
-{% macro display_rows(rows, start) %}
-    {% for row in rows.itertuples() %}
-        {% set outerloop, rownum = loop, loop.index0 + start %}
-        {% if index %}
-            {%- if levels == 1 -%}
-                {{ styler.format_index(rownum) }}
-            {%- else -%}
-                {% for index in row[0] -%} 
-                    {# #} {{ styler.format_index(rownum, loop.index0, outerloop.first) }} {# #}
-                {%- endfor %}
-            {% endif %}
-        {% endif %}
-        {% if not split_cols %}
-            {% for val in row[1:] -%}
-                {# #} {{ styler.format_value(val, rownum, loop.index0) }} {# #}
-            {%- endfor %}
-        {% else %}
-            {% for val in row[1:head_col + 1] -%} 
-                {# #} {{ styler.format_value(val, rownum, loop.index0) }} {# #}
-            {%- endfor %} ... 
-            {%- for val in row[-tail_col:] -%} 
-                {# #} {{ styler.format_value(val, rownum, df.columns | length - loop.revindex) }} {# #}
-            {%- endfor %}
-        {% endif %}
-        {% if not loop.last %}
+{%- from 'string_macro.tpl' import newline, space, display_rows with context -%}
+{%- set split_cols = max_cols < df.columns | length -%}
+{%- if header -%}
+    {%- if index -%}
+        {%- if levels == 1 -%}
+            {{- styler.format_index_name() -}}
+        {%- else -%}
+            {%- for name in df.index.names -%}
+                {{- styler.format_index_name(loop.index0) -}} {{- space(loop) -}}
+            {%- endfor -%}
+        {%- endif -%}
+        {{- space() -}}
+    {%- endif -%}
 
-            {# insert new lines #}
-        {% endif %}
-    {%- endfor %}
-{% endmacro %}
-{% set split_cols = max_cols < df.columns | length %}
-{% if header %}
-    {% if index %}
-        {% if levels == 1 -%}
-            {{ styler.format_index_name() }} {# #}
-        {%- else %}
-            {% for name in df.index.names -%}
-                {# #} {{ styler.format_index_name(loop.index0) }} {# #}
-            {%- endfor %}
-        {% endif %}
-    {% endif %}
-    {% if not split_cols %}
-        {% for col in df -%} 
-            {# #} {{ styler.format_column_header(loop.index0) }} {# #}
-        {%- endfor %} 
-    {% else %}
-        {% set head_col = (max_cols / 2) | round(0, "ceil") | int %}
-        {% set tail_col = (max_cols / 2) | round(0, "floor") | int %}
-        {% for col in df.columns[:head_col] -%} 
-            {# #} {{ styler.format_column_header(loop.index0) }} {# #}
-        {%- endfor %} ... 
+    {%- if not split_cols -%}
+        {%- for col in df -%} 
+            {{- styler.format_column_header(loop.index0) -}}
+            {{- space(loop) -}}
+        {%- endfor -%} 
+    {%- else -%}
+        {%- set head_col = (max_cols / 2) | round(0, "ceil") | int -%}
+        {%- set tail_col = (max_cols / 2) | round(0, "floor") | int -%}
+        {%- for col in df.columns[:head_col] -%} 
+            {{- styler.format_column_header(loop.index0) -}}
+            {{- space(loop) -}}
+        {%- endfor -%}
+        {{- space() -}}...{{- space() -}}
         {%- for col in df.columns[-tail_col:] -%} 
-            {# #} {{ styler.format_column_header(df.columns | length - loop.revindex) }} {# #}
-        {%- endfor %} 
-    {% endif %}
-{% endif %}
-{% if max_rows >= (df | length) -%}
-    {{ display_rows(df, 0) }}
-{%- else %}
-    {% set head_rows = (max_rows / 2) | round(0, "floor") | int -%}
-    {{ display_rows(df.head(head_rows), 0) }}
-    {% set width = display_rows(df.head(1), 0) | length -%}
-    {{ "." * width }}
-    {% set tail_rows = (max_rows / 2) | round(0, "ceil") | int -%}
-    {{ display_rows(df.tail(tail_rows), (df | length) - tail_rows) }}
-{%- endif %}
-{% if show_dimensions %}
+            {{- styler.format_column_header(df.columns | length - loop.revindex) -}}
+            {{- space(loop) -}}
+        {%- endfor -%} 
+    {%- endif -%}
+    {{- newline() -}}
+{%- endif -%}
 
-[{{ df.shape[0] }} rows x {{ df.shape[1] }} columns]
-{%- endif %}
+{%- if max_rows >= (df | length) -%}
+    {{- display_rows(df, 0) -}}
+{%- else -%}
+    {%- set head_rows = (max_rows / 2) | round(0, "floor") | int -%}
+    {{- display_rows(df.head(head_rows), 0) -}}
+    {{- newline() -}}
+
+    {%- set width = display_rows(df.head(1), 0) | length -%}
+    {{- "." * width -}}
+
+    {{- newline() -}}
+    {%- set tail_rows = (max_rows / 2) | round(0, "ceil") | int -%}
+    {{- display_rows(df.tail(tail_rows), (df | length) - tail_rows) -}}
+{%- endif -%}
+
+{%- if show_dimensions -%}
+    {{- newline() -}}
+    {{- newline() -}}
+    [{{ df.shape[0] }} rows x {{ df.shape[1] }} columns]
+{%- endif -%}
