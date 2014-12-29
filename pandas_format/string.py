@@ -34,20 +34,6 @@ def to_string(df, buf=None, columns=None, col_space=0, header=True, index=True,
     else:
         buf.write(ret)
 
-def pad(string, width, justify="left"):
-    width = width - len(string)
-    if justify == "left":
-        return string + width * " "
-    elif justify == "right":
-        return width * " " + string
-    elif justify == "center":
-        half = " " * (width // 2)
-        if width % 2 == 0:
-            return half + string + half
-        else:
-            return " " + half + string + half
-    else:
-        raise Exception()
 
 
 class StringStyler(Styler):
@@ -79,17 +65,32 @@ class StringStyler(Styler):
             for i, name in enumerate(self.df.index.names):
                 self.index_widths[i] = max(self.index_widths[i], len(str(name)))
 
+    def pad(self, string, width):
+        width = width - len(string)
+        if self.justify == "left":
+            return string + width * " "
+        elif self.justify == "right":
+            return width * " " + string
+        elif self.justify == "center":
+            half = " " * (width // 2)
+            if width % 2 == 0:
+                return half + string + half
+            else:
+                return " " + half + string + half
+        else:
+            raise Exception()
+
     def format_value(self, value, row, col):
         value = super(StringStyler, self).format_value(value, row, col)
 
         if len(value) < self.widths[col]:
-            return pad(value, self.widths[col], self.justify)
+            return self.pad(value, self.widths[col])
         else:
             return value
 
     def format_column_header(self, col):
         column = str(self.df.columns[col])
-        return pad(column, self.widths[col], self.justify)
+        return self.pad(column, self.widths[col])
 
     def format_index(self, row, level=0, first=None):
         value = self.indices[row]
@@ -97,15 +98,15 @@ class StringStyler(Styler):
             value = value[level]
 
             if not self.sparsify or first or self.indices[row - 1][level] != value:
-                return pad(str(value), self.index_widths[level])
+                return self.pad(str(value), self.index_widths[level])
             else:
                 return " " * self.index_widths[level]
         else:
-            return pad(str(value), self.index_widths[level])
+            return self.pad(str(value), self.index_widths[level])
 
     def format_index_name(self, level=0):
         if self.index_names:
             name = str(self.df.index.names[level])
-            return pad(name, self.index_widths[level], self.justify)
+            return self.pad(name, self.index_widths[level])
         else:
             return " " * self.index_widths[level]
