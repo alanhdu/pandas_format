@@ -20,7 +20,6 @@ def _to_html(df, header=True, index=True, index_names=True,
              bold_rows=True, max_rows=float('inf'), max_cols=float('inf'),
              show_dimensions=False, styler=None):
     env.filters["inline"] = dict_to_inline
-    env.filters["format_value"] = styler.format_value
 
     template = env.get_template("html.tpl")
 

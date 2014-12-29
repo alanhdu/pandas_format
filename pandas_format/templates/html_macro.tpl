@@ -19,31 +19,32 @@
 		<tr{{ styler.row_style(outerloop.index0 + start) | inline }}>
 			{% if index %}
 				{% if levels == 1 %}
-					{% set d = styler.index_style(rownum, end) %}
-					{{ row_header(tuple[0], d) }}
+					{% set style = styler.index_style(rownum, end) %}
+					{{ row_header(tuple[0], style) }}
 				{% else %}
 					{% for i in tuple[0] %}
-						{% set d = styler.index_style(rownum, end, loop.index0, outerloop.first) %}
-						{% if "rowspan" in d %}
-							{{ row_header(i, d) }}
+						{% set style = styler.index_style(rownum, end, loop.index0, outerloop.first) %}
+						{% if "rowspan" in style %}
+							{{ row_header(i, style) }}
 						{% endif %}
 					{% endfor %}
 				{% endif %}
 			{% endif %}
 			{% if not split_cols %}
 				{% for value in tuple[1:] %}
-					{% set d = styler.value_style(rownum, loop.index0) %}
-					<td{{ d | inline }}>{{ value | format_value(rownum, loop.index0) }}</td>
+					{% set style = styler.value_style(rownum, loop.index0) %}
+					<td{{ style | inline }}>{{ styler.format_value(value, rownum, loop.index0) }}</td>
 				{% endfor %}
 			{% else %}
 				{% for value in tuple[1:head_col + 1] %}
-					{% set d = styler.value_style(rownum, loop.index0) %}
-					<td{{ d | inline }}>{{ value | format_value(rownum, loop.index0) }}</td>
+					{% set style = styler.value_style(rownum, loop.index0) %}
+					<td{{ style | inline }}>{{ styler.format_value(value, rownum, loop.index0) }}</td>
 				{% endfor %}
 				<td> &hellip; </td>
 				{% for value in tuple[-tail_col:] %}
-					{% set d = styler.value_style(rownum, df.columns | length - loop.revindex) %}
-					<td{{ d | inline }}>{{ value | format_value(rownum, df.columns | length - loop.revindex) }} </td>
+					{% set colnum = df.columns | length - loop.revindex %}
+					{% set style = styler.value_style(rownum, colnum) %}
+					<td{{ style | inline }}>{{ styler.format_value(value, rownum, colnum) }}</td>
 				{% endfor %}
 			{% endif %}
 		  </tr>

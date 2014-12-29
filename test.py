@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import pandas_format as pf
+from bs4 import BeautifulSoup
 
 np.random.seed(0)
 
@@ -19,7 +20,6 @@ runs = [dict(df=df, max_rows=11, formatters={"Name":str.upper}),
         dict(df=df, float_format=lambda x: "{0:.2f}".format(x), na_rep="NAAAAA", classes=["a", "b"]),
        ]
 
-
 for key, value in enumerate(runs):
     with open("correct/{}.html".format(key), "w") as fout:
         pf.to_html(buf=fout, **value)
@@ -27,3 +27,14 @@ for key, value in enumerate(runs):
         if "classes" in value:
             del value["classes"]
         pf.to_string(buf=fout, **value)
+"""
+for key, value in enumerate(runs):
+    with open("correct/{}.html".format(key)) as fin:
+        assert BeautifulSoup(pf.to_html(**value)) == BeautifulSoup(fin.read()), \
+                "Failed on to_html {}".format(key)
+    with open("correct/{}.txt".format(key)) as fin:
+        if "classes" in value:
+            del value["classes"]
+        assert pf.to_string(**value) == fin.read(), \
+                "Failed on to_string {}".format(key)
+                """

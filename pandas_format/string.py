@@ -4,8 +4,6 @@ from .core import Styler, env
 
 def _to_string(df, header=True, index=True, max_rows=float('inf'),
                max_cols=float('inf'), show_dimensions=False, styler=None):
-    env.filters["format_value"] = styler.format_value
-
     template = env.get_template("string.tpl")
 
     if isinstance(df.index, pd.MultiIndex):
