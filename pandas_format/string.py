@@ -1,13 +1,9 @@
 import pandas as pd
 
-from jinja2 import Environment, PackageLoader
-
-from .core import Styler
+from .core import Styler, env
 
 def _to_string(df, header=True, index=True, max_rows=float('inf'),
                max_cols=float('inf'), show_dimensions=False, styler=None):
-    env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
-                      lstrip_blocks=True)
     env.filters["format_value"] = styler.format_value
 
     template = env.get_template("string.tpl")
@@ -102,10 +98,12 @@ class StringStyler(Styler):
         if isinstance(value, tuple):
             value = value[level]
 
-        if not self.sparsify or first or self.indices[row - 1][level] != value:
-            return pad(str(value), self.index_widths[level])
+            if not self.sparsify or first or self.indices[row - 1][level] != value:
+                return pad(str(value), self.index_widths[level])
+            else:
+                return " " * self.index_widths[level]
         else:
-            return " " * self.index_widths[level]
+            return pad(str(value), self.index_widths[level])
 
     def format_index_name(self, level=0):
         if self.index_names:

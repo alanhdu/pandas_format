@@ -1,7 +1,11 @@
 from collections import Mapping, Sequence
 
+from jinja2 import Environment, PackageLoader
 from pandas.core.common import is_float_dtype
 import numpy as np
+
+env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
+                  lstrip_blocks=True)
 
 class Styler(object):
     def __init__(self, df, na_rep="NaN", formatters=None, float_format=str):

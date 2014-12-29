@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from jinja2 import Environment, PackageLoader
 import markupsafe
 
 from .core import Styler
@@ -17,13 +16,9 @@ def dict_to_inline(d):
     else:
         return ""
 
-
 def _to_html(df, header=True, index=True, index_names=True,
              bold_rows=True, max_rows=float('inf'), max_cols=float('inf'),
              show_dimensions=False, styler=None):
-
-    env = Environment(loader=PackageLoader("pandas_format"), trim_blocks=True,
-                      lstrip_blocks=True)
     env.filters["inline"] = dict_to_inline
     env.filters["format_value"] = styler.format_value
 
