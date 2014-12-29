@@ -6,7 +6,7 @@
 				{% if index %}
 					{% for name in df.index.names %}
 						{% if index_names %}
-							<th>{{ name | format_value }}</th>
+							<th>{{ name }}</th>
 						{% else %}
 							<th></th>
 						{% endif %}

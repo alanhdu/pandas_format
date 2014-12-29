@@ -3,7 +3,7 @@ import pandas as pd
 
 import markupsafe
 
-from .core import Styler
+from .core import Styler, env
 
 def _inline(key, value):
     if value is None:
@@ -86,16 +86,16 @@ class DefaultHtmlStyler(HtmlStyler):
         else:
             return value
 
-    def index_style(self, i, level=None, first=False):
+    def index_style(self, rownum, end, level=None, first=False):
         inline = {}
         if self.col_space is not None:
             inline["style"] = "min-width: {};".format(self.col_space)
 
         if level is not None and self.sparsify:
-            current = self.indices[i][level]
-            if first or self.indices[i-1][level] != current:
+            current = self.indices[rownum][level]
+            if first or self.indices[rownum-1][level] != current:
                 inline["rowspan"] = 1
-                for index in self.indices[i+1:]:
+                for index in self.indices[rownum+1:end]:
                     if index[level] == current:
                         inline["rowspan"] += 1
                     else:
