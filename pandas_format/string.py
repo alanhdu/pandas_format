@@ -2,16 +2,16 @@ import pandas as pd
 
 from .core import Styler, env
 
-def _to_string(df, header=True, index=True, max_rows=float('inf'),
-               max_cols=float('inf'), show_dimensions=False, styler=None):
+def _to_string(styler, header=True, index=True, max_rows=float('inf'),
+               max_cols=float('inf'), show_dimensions=False):
     template = env.get_template("string.tpl")
 
-    if isinstance(df.index, pd.MultiIndex):
-        levels = len(df.index.levels)
+    if isinstance(styler.df.index, pd.MultiIndex):
+        levels = len(styler.df.index.levels)
     else:
         levels = 1
 
-    return template.render(df=df, styler=styler, header=header, index=index,
+    return template.render(styler=styler, header=header, index=index,
                            levels=levels, max_rows=max_rows, max_cols=max_cols,
                            show_dimensions=show_dimensions)
 
@@ -27,13 +27,12 @@ def to_string(df, buf=None, columns=None, col_space=0, header=True, index=True,
     styler = StringStyler(df, col_space, na_rep, formatters, float_format,
                           justify, sparsify, index_names)
 
-    ret = _to_string(df, header, index, max_rows, max_cols,
-                     show_dimensions, styler)
+    ret = _to_string(styler, header, index, max_rows, max_cols,
+                     show_dimensions)
     if buf is None:
         return ret
     else:
         buf.write(ret)
-
 
 
 class StringStyler(Styler):

@@ -16,19 +16,19 @@ def dict_to_inline(d):
     else:
         return ""
 
-def _to_html(df, header=True, index=True, index_names=True,
+def _to_html(styler, header=True, index=True, index_names=True,
              bold_rows=True, max_rows=float('inf'), max_cols=float('inf'),
-             show_dimensions=False, styler=None):
+             show_dimensions=False):
     env.filters["inline"] = dict_to_inline
 
     template = env.get_template("html.tpl")
 
-    if isinstance(df.index, pd.MultiIndex):
-        levels = len(df.index.levels)
+    if isinstance(styler.df.index, pd.MultiIndex):
+        levels = len(styler.df.index.levels)
     else:
         levels = 1
 
-    return template.render(df=df, styler=styler, levels=levels, header=header,
+    return template.render(styler=styler, levels=levels, header=header,
                            bold_rows=bold_rows, index_names=index_names,
                            index=index, max_rows=max_rows, max_cols=max_cols,
                            showdimensions=show_dimensions)
@@ -45,8 +45,8 @@ def to_html(df, buf=None, columns=None, col_space=None, header=True,
     styler = DefaultHtmlStyler(df, col_space, na_rep, formatters, float_format,
                         justify, sparsify, classes, escape)
 
-    ret = _to_html(df, header, index, index_names, bold_rows, max_rows,
-                   max_cols, show_dimensions, styler)
+    ret = _to_html(styler, header, index, index_names, bold_rows, max_rows,
+                   max_cols, show_dimensions)
     if buf is None:
         return ret
     else:

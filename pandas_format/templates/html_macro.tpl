@@ -42,7 +42,7 @@
 				{% endfor %}
 				<td> &hellip; </td>
 				{% for value in tuple[-tail_col:] %}
-					{% set colnum = df.columns | length - loop.revindex %}
+					{% set colnum = styler.df.columns | length - loop.revindex %}
 					{% set style = styler.value_style(rownum, colnum) %}
 					<td{{ style | inline }}>{{ styler.format_value(value, rownum, colnum) }}</td>
 				{% endfor %}

@@ -22,13 +22,12 @@ class Styler(object):
 
     def format_value(self, value, row, col):
         if self.formatters is not None:
-            columns = self.df.columns
             if isinstance(self.formatters, Mapping):
-                column = columns[col]
+                column = self.df.columns[col]
                 if column in self.formatters:
                     return self.formatters[column](value)
             elif isinstance(self.formatters, Sequence):
-                if len(columns) == len(self.formatters):
+                if len(self.df.columns) == len(self.formatters):
                     return self.formatters[col](value)
                 else:
                     raise IndexError

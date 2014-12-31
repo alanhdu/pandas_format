@@ -1,4 +1,4 @@
-{%- set split_cols = max_cols < df.columns | length -%}
+{%- set split_cols = max_cols < styler.df.columns | length -%}
 {%- if split_cols %}
     {%- set head_col = (max_cols / 2) | round(0, "ceil") | int -%}
     {%- set tail_col = (max_cols / 2) | round(0, "floor") | int -%}
@@ -43,7 +43,7 @@
             {{- space() -}}...{{- space() -}}
 
             {%- for val in row[-tail_col:] -%} 
-                {{- styler.format_value(val, rownum, df.columns | length - loop.revindex) -}}
+                {{- styler.format_value(val, rownum, styler.df.columns | length - loop.revindex) -}}
                 {{- space(loop) -}}
             {%- endfor -%}
         {%- endif -%}
