@@ -31,7 +31,7 @@ def _to_html(styler, header=True, index=True, index_names=True,
     return template.render(styler=styler, levels=levels, header=header,
                            bold_rows=bold_rows, index_names=index_names,
                            index=index, max_rows=max_rows, max_cols=max_cols,
-                           showdimensions=show_dimensions)
+                           show_dimensions=show_dimensions)
 
 def to_html(df, buf=None, columns=None, col_space=None, header=True,
             index=True, na_rep='NaN', formatters=None, float_format=str,
